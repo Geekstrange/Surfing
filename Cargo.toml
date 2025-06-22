@@ -1,0 +1,14 @@
+[package]
+name = "Surfing"
+version = "0.0.1"
+edition = "2021"
+authors = ["Geekstrange"]
+description = "A funny CLI download tool with animated progress bars"
+license = "MIT"
+
+[dependencies]
+openssl = { version = "0.10", features = ["vendored"] }
+reqwest = { version = "0.11", features = ["blocking", "stream"] }
+tokio = { version = "1", features = ["full"] }
+ctrlc = "3.4"
+anyhow = "1.0"
