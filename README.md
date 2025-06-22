@@ -64,17 +64,6 @@ wget https://github.com/Geekstrange/Surfing/releases/latest/download/surfing_amd
 surfing "https://example.com/large-file.zip" "download.zip"
 ```
 
-### 跨平台特色功能
-```bash
-# 多线程下载（提升速度）
-surfing --threads=8 "http://mirror/linux.iso" "distro.iso"
-
-# 断点续传（意外中断后继续）
-surfing --resume "http://example.com/bigfile" "partial.data"
-
-# 速度限制（避免占满带宽）
-surfing --limit 1M "https://cdn/4k-video.mp4" "movie.mp4"
-```
 
 ### 专业技巧
 ```bash
