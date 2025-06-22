@@ -4,7 +4,7 @@ version = "0.0.1"
 edition = "2021"
 authors = ["Geekstrange"]
 description = "A funny CLI download tool with animated progress bars"
-license = "MIT"
+license = "CC-BY-NC-SA"
 
 [dependencies]
 openssl = { version = "0.10", features = ["vendored"] }
