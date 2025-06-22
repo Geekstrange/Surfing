@@ -45,15 +45,13 @@
 ### Windows专属
 ```powershell
 # PowerShell一键安装
-iwr -useb https://github.com/Geekstrange/Surfing/releases/latest/download/surfing-x86_64-pc-windows-msvc.exe -o $env:TEMP\surfing.exe; mv $env:TEMP\surfing.exe C:\Windows\System32\
+iwr -useb https://github.com/Geekstrange/Surfing/releases/latest/download/surfing-x86_64.exe -o $env:TEMP\surfing.exe; mv $env:TEMP\surfing.exe C:\Windows\System32\
 ```
 
 
 ### Linux专属
 ```bash
-# DEB包安装（Debian/Ubuntu）
-wget https://github.com/Geekstrange/Surfing/releases/latest/download/surfing_amd64.deb
-sudo dpkg -i surfing_amd64.deb
+wget https://github.com/Geekstrange/Surfing/releases/latest/download/surfing
 ```
 
 ---
