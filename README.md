@@ -9,7 +9,7 @@
 </div>
 <p align="center">
   <br>
-  <a href="https://github.com/Geekstrange/Surfing"><img src="https://img.shields.io/badge/Version-0.0.2-cyan?style=for-the-badge&logo=rust"></a>
+  <a href="https://github.com/Geekstrange/Surfing"><img src="https://img.shields.io/badge/Version-0.0.1-cyan?style=for-the-badge&logo=rust"></a>
   <a href="https://github.com/Geekstrange/Surfing/blob/main/LICENSE"><img src="https://forthebadge.com/images/badges/cc-nc-sa.svg"></a>
   <a href="https://github.com/Geekstrange/Surfing/stargazers"><img src="https://img.shields.io/github/stars/Geekstrange/Surfing?color=yellow&style=for-the-badge&logo=github"></a>
 </p>
@@ -45,14 +45,14 @@
 ### Windows专属
 ```powershell
 # PowerShell一键安装
-iwr -useb https://github.com/Geekstrange/Surfing/releases/latest/download/surfing-vx.x.x-windows_xxx.exe -o $env:TEMP\surfing.exe; mv $env:TEMP\surfing.exe C:\Windows\System32\
+iwr -useb https://github.com/Geekstrange/Surfing/releases/latest/download/surfing_amd64.exe -o $env:TEMP\surfing.exe; mv $env:TEMP\surfing.exe C:\Windows\System32\
 ```
 
 
 ### Linux专属
 ```bash
 # 全系通用
-wget https://github.com/Geekstrange/Surfing/releases/latest/download/surfing-vx.x.x-linux_xxx
+wget https://github.com/Geekstrange/Surfing/releases/latest/download/surfing_amd64
 ```
 
 ---
@@ -86,6 +86,8 @@ surfing "http://example.com/data" "dataset.bin" --report > download.json
 |              | ARM64                 | `surfing-vx.x.x-windows_arm64.exe` |
 | **Linux**    | 64位 (x86_64)         | `surfing-vx.x.x-linux_amd64`       |
 |              | ARM64                 | `surfing-vx.x.x-linux_arm64`       |
+| **macOS**    | Intel (x86_64)        | `surfing-vx.x.x-darwin_amd64`      |
+|              | Apple Silicon (ARM64) | `surfing-vx.x.x-darwin_arm64`      |
 
 ## 如何确定我的系统架构
 
