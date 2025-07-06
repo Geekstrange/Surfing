@@ -55,13 +55,6 @@ iwr -useb https://github.com/Geekstrange/Surfing/releases/latest/download/surfin
 wget https://github.com/Geekstrange/Surfing/releases/latest/download/surfing-vx.x.x-linux_xxx
 ```
 
-
-### macOS专属
-```zsh
-# 全系通用
-wget https://github.com/Geekstrange/Surfing/releases/latest/download/surfing-vx.x.x-darwin_xxx
-```
-
 ---
 
 ## 🎮 使用指南
@@ -93,8 +86,6 @@ surfing "http://example.com/data" "dataset.bin" --report > download.json
 |              | ARM64                 | `surfing-vx.x.x-windows_arm64.exe` |
 | **Linux**    | 64位 (x86_64)         | `surfing-vx.x.x-linux_amd64`       |
 |              | ARM64                 | `surfing-vx.x.x-linux_arm64`       |
-| **macOS**    | Intel (x86_64)        | `surfing-vx.x.x-darwin_amd64`      |
-|              | Apple Silicon (ARM64) | `surfing-vx.x.x-darwin_arm64`      |
 
 ## 如何确定我的系统架构
 
