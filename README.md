@@ -1,9 +1,9 @@
 # 🌊 Surfing - 给终端下载装上冲浪板的艺术（Rust重制版）
 
 <div class="attribution-notice" style="text-align:center; margin:20px 0; font-size:0.9em; color:#666;">
-  <a href="https://dribbble.com/shots/1835728-Surf-s-up-dude" 
-     target="_blank" 
-     rel="noopener noreferrer" 
+  <a href="https://dribbble.com/shots/1835728-Surf-s-up-dude"
+     target="_blank"
+     rel="noopener noreferrer"
      style="display:inline-block; text-decoration:none; color:#ea4c89;">
   </a>
 </div>
@@ -76,6 +76,68 @@ surfing "http://example.com/data" "dataset.bin" --report > download.json
 
 ---
 
+# 版本选择指南
+
+根据您的操作系统和架构，请选择对应的安装文件以下是不同平台的版本对应关系：
+
+| **操作系统** | **架构**              | **文件名**                          |
+| :----------- | :-------------------- | :---------------------------------- |
+| **Windows**  | 64位 (x86_64)         | `surfing-vx.x.x-windows_amd64.exe` |
+|              | ARM64                 | `surfing-vx.x.x-windows_arm64.exe` |
+| **Linux**    | 64位 (x86_64)         | `surfing-vx.x.x-linux_amd64`       |
+|              | ARM64                 | `surfing-vx.x.x-linux_arm64`       |
+| **macOS**    | Intel (x86_64)        | `surfing-vx.x.x-darwin_amd64`      |
+|              | Apple Silicon (ARM64) | `surfing-vx.x.x-darwin_arm64`      |
+
+## 如何确定我的系统架构
+
+### Windows 系统
+
+1. **打开命令提示符**：可以通过在开始菜单中搜索“cmd”或“命令提示符”来打开
+
+2. **输入命令**：在命令提示符中输入以下命令并按回车键：
+
+   ```cmd
+   wmic os get osarchitecture
+   ```
+
+3. **查看输出结果**：
+
+   - 如果显示“64-bit”，则您的系统是 **64位 (x86_64)**
+   - 如果显示“ARM64”，则您的系统是 **ARM64**
+
+### Linux 系统
+
+1. **打开终端**：可以通过在应用程序菜单中搜索“终端”或使用快捷键（通常是`Ctrl+Alt+T`）来打开
+
+2. **输入命令**：在终端中输入以下命令并按回车键：
+
+   ```bash
+   uname -m
+   ```
+
+3. **查看输出结果**：
+
+   - 如果显示`x86_64`，则您的系统是 **64位 (x86_64)**
+   - 如果显示`aarch64`，则您的系统是 **ARM64**
+
+### macOS 系统
+
+1. **打开终端**：可以通过在应用程序菜单中搜索“终端”来打开
+
+2. **输入命令**：在终端中输入以下命令并按回车键：
+
+   ```zsh
+   uname -m
+   ```
+
+3. **查看输出结果**：
+
+   - 如果显示`x86_64`，则您的系统是 **Intel (x86_64)**
+   - 如果显示`arm64`，则您的系统是 **Apple Silicon (ARM64)**
+
+---
+
 ## 📜 开源宪章
 ### 继承自Surfing-curl的协议精神
 - **核心原则不变**：仍采用CC-BY-NC-SA 4.0协议
@@ -101,8 +163,8 @@ WAVE_CHARS="🌊 🏄‍♂️ 🏄‍♀️" cargo run -- "https://..." "file.b
   © 2025 Geekstrange - 保留所有冲浪权利<br>
   <sub>
     本代码采用
-    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" 
-       target="_blank" 
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/"
+       target="_blank"
        style="color: #2F80ED; text-decoration: underline dotted;">
       CC-BY-NC-SA 4.0
     </a>
