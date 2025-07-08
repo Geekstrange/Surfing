@@ -30,10 +30,13 @@ const BOLD: &str = "\x1b[1m";
 const RESET: &str = "\x1b[0m";
 
 const MAX_RETRY: u32 = 3;
+const CONNECT_TIMEOUT: u64 = 5; // 连接超时时间（秒）
 
 struct DownloadInfo {
     current_size: u64,
     speed: u64,
+    has_started: bool,
+    connection_status: String, // 新增：连接状态
 }
 
 fn main() {
@@ -65,7 +68,11 @@ fn main() {
 }
 
 fn get_file_size(url: &str) -> Option<u64> {
-    let client = Client::new();
+    let client = Client::builder()
+        .timeout(Duration::from_secs(CONNECT_TIMEOUT))
+        .build()
+        .ok()?;
+
     let response = match client.head(url).send() {
         Ok(r) => r,
         Err(_) => return None,
@@ -87,7 +94,6 @@ fn show_cursor() {
 }
 
 fn surfing_progress_bar(url: &str, filename: &str, download_dir: &str) -> Result<(), String> {
-    let download_info = Arc::new(Mutex::new(DownloadInfo { current_size: 0, speed: 0 }));
     let running = Arc::new(AtomicBool::new(true));
     let file_path = Path::new(download_dir).join(filename);
     let file_path_str = file_path.to_str().ok_or("无效文件路径")?.to_string();
@@ -110,6 +116,17 @@ fn surfing_progress_bar(url: &str, filename: &str, download_dir: &str) -> Result
     for attempt in 1..=MAX_RETRY {
         if !running.load(Ordering::SeqCst) { break; }
 
+        // 每次尝试都重置下载信息
+        let download_info = Arc::new(Mutex::new(DownloadInfo {
+            current_size: 0,
+            speed: 0,
+            has_started: false,
+            connection_status: "初始化...".to_string(),
+        }));
+
+        // 提前创建空文件，使监控线程立即开始工作
+        let _ = fs::File::create(&file_path_str).map_err(|e| format!("创建文件失败: {}", e))?;
+
         let download_info_clone = download_info.clone();
         let running_clone = running.clone();
         let file_path_clone = file_path_str.clone();
@@ -122,6 +139,13 @@ fn surfing_progress_bar(url: &str, filename: &str, download_dir: &str) -> Result
             while running_clone.load(Ordering::SeqCst) {
                 if let Ok(metadata) = fs::metadata(&file_path_clone) {
                     let current_size = metadata.len();
+
+                    // 更新下载开始标记
+                    if current_size > 0 {
+                        let mut info = download_info_clone.lock().unwrap();
+                        info.has_started = true;
+                    }
+
                     let elapsed = start_time.elapsed().as_secs_f64();
                     let speed = if elapsed > 0.0 {
                         current_size.saturating_sub(prev_size) as f64 / elapsed
@@ -136,19 +160,49 @@ fn surfing_progress_bar(url: &str, filename: &str, download_dir: &str) -> Result
                     }
                     prev_size = current_size;
                 }
-                thread::sleep(Duration::from_millis(500));
+                thread::sleep(Duration::from_millis(200)); // 更快的监控间隔
             }
         });
 
-        // 波浪动画线程
+        // 波浪动画线程 - 立即启动
         let download_info_clone = download_info.clone();
         let running_clone = running.clone();
         let animation_thread = thread::spawn(move || {
             wave_animation(attempt, download_info_clone, running_clone);
         });
 
-        // 下载文件
-        let download_result = download_file(url, &file_path_str);
+        // 在单独线程中执行下载 - 关键优化！
+        let download_info_clone = download_info.clone();
+        let url_clone = url.to_string();
+        let file_path_clone = file_path_str.clone();
+        let download_thread = thread::spawn(move || {
+            // 更新连接状态
+            {
+                let mut info = download_info_clone.lock().unwrap();
+                info.connection_status = "正在解析DNS...".to_string();
+            }
+            thread::sleep(Duration::from_millis(100)); // 给状态更新一点时间
+
+            {
+                let mut info = download_info_clone.lock().unwrap();
+                info.connection_status = "正在连接服务器...".to_string();
+            }
+
+            let result = download_file(&url_clone, &file_path_clone);
+
+            // 下载完成后更新状态
+            if let Err(ref e) = result {
+                let mut info = download_info_clone.lock().unwrap();
+                info.connection_status = format!("错误: {}", e);
+            }
+
+            result
+        });
+
+        // 等待下载线程完成
+        let download_result = download_thread.join()
+            .map_err(|_| "下载线程崩溃".to_string())?
+            .map_err(|e| format!("下载失败: {}", e));
 
         running.store(false, Ordering::SeqCst);
         let _ = monitor_thread.join();
@@ -192,6 +246,7 @@ fn wave_animation(
     let wave_chars: Vec<char> = wave_blocks.chars().collect();
     let mut positions = vec![0i32, -2, 2];
     let mut directions = vec![1i32, -1, 1];
+    let start_time = Instant::now();
 
     while running.load(Ordering::SeqCst) {
         let mut core_line = String::new();
@@ -220,11 +275,23 @@ fn wave_animation(
 
         let info_text = {
             let info = download_info.lock().unwrap();
-            format!("已下载:{}kb 速度:{}kbps", info.current_size / 1024, info.speed / 1024)
+            // 根据下载状态显示不同信息
+            if !info.has_started {
+                let elapsed = start_time.elapsed().as_secs();
+                format!("{} (等待: {}秒)", info.connection_status, elapsed)
+            } else {
+                format!(
+                    "已下载:{}kb 速度:{}kbps",
+                    info.current_size / 1024,
+                    info.speed / 1024
+                )
+            }
         };
 
-        let full_line = format!(" Surfing:{}[{}]{} {} 尝试下载(第 {} 次)",
-                              CYAN_BG, core_line, RESET, info_text, attempt);
+        let full_line = format!(
+            " Surfing:{}[{}]{} {} 尝试下载(第 {} 次)",
+            CYAN_BG, core_line, RESET, info_text, attempt
+        );
         print!("\r\x1b[K{}", full_line);
         io::stdout().flush().unwrap();
 
@@ -320,7 +387,11 @@ fn real_progress_bar(url: &str, filename: &str, download_dir: &str) -> Result<()
     for attempt in 1..=MAX_RETRY {
         *current_progress.lock().unwrap() = 0;
 
-        let client = Client::new();
+        let client = Client::builder()
+            .timeout(Duration::from_secs(CONNECT_TIMEOUT))
+            .build()
+            .map_err(|e| format!("创建客户端失败: {}", e))?;
+
         let mut response = match client.get(url).send() {
             Ok(r) => r,
             Err(e) => {
@@ -433,13 +504,21 @@ fn update_progress(message: &str, current_progress: u32) {
 }
 
 fn download_file(url: &str, file_path: &str) -> Result<(), String> {
-    let client = Client::new();
+    let client = Client::builder()
+        .timeout(Duration::from_secs(CONNECT_TIMEOUT))
+        .build()
+        .map_err(|e| format!("创建客户端失败: {}", e))?;
+
     let mut response = client.get(url)
         .send()
         .map_err(|e| format!("请求失败: {}", e))?;
 
-    let mut file = fs::File::create(file_path)
-        .map_err(|e| format!("创建文件失败: {}", e))?;
+    // 使用追加模式打开文件，保留已下载内容
+    let mut file = fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(file_path)
+        .map_err(|e| format!("打开文件失败: {}", e))?;
 
     let mut buffer = [0u8; 8192];
     loop {
